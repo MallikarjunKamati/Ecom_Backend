@@ -2,6 +2,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { sendRegistrationEmail } = require("../utils/email");
 
     const registeredUser = async (req, res, next) => {
         try {
@@ -21,6 +22,10 @@ const User = require("../models/User");
                 email,
                 password,
             });
+            await sendRegistrationEmail({
+                to: newUser.email,
+                email: newUser.email,
+            })
             res.status(201).json({
                 message: "User registered successfully",
             });
@@ -83,8 +88,29 @@ const logoutUser = (req, res, next) => {
         message: "User logged out successfully",
     });
 };
+const verifyUser = (req, res, next) => {
+  // Check if the token exists in the request cookies
+  const token = req.cookies.token;
+  if (!token)
+    return res.status(401).json({
+      authenticated: false,
+    });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    res.status(200).json({
+      authenticated: true,
+      user: decoded,
+    });
+  } catch (err) {
+    res.status(401).json({
+      authenticated: false,
+    });
+  }
+};
 module.exports = {
     registeredUser,
     loginUser,
     logoutUser,
+    verifyUser,
 };
