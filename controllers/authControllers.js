@@ -65,6 +65,13 @@ const loginUser = async (req, res, next) => {
             maxAge: 360000,
 
         });
+        res.cookie("token",token, {
+            httpOnly: true,
+            maxAge: 3600000,
+            secure : true, 
+            sameSite: "None", 
+        });
+        
         res.status(200).json({
             message: "User Logged in Successfully",
             user: {
